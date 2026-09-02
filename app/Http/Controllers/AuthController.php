@@ -11,6 +11,9 @@ class AuthController extends Controller
 {
     public function showRegister()
     {
+        if (Auth::check()) {
+            return redirect()->route('index');
+        }
         return view('user.auth.register');
     }
 
@@ -18,21 +21,27 @@ class AuthController extends Controller
     {
         $incomingFields = $request->validate([
             'name' => 'required|string|max:255',
-            'email' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255|unique:users,email',
             'password' => 'required|string|min:8|confirmed',
         ]);
 
         $incomingFields['password'] = Hash::make($incomingFields['password']);
 
-        User::create($incomingFields);
+        $user = User::create($incomingFields);
 
-        return redirect()->route('index');
+        Auth::login($user);
+        $request->session()->regenerate();
+
+        return redirect()->route('index')->with('success', 'Account created successfully! Welcome to Qura.');
     }
 
 
 
     public function showLogin()
     {
+        if (Auth::check()) {
+            return redirect()->route('index');
+        }
         return view('user.auth.login');
     }
 
@@ -43,9 +52,9 @@ class AuthController extends Controller
             'password' => 'required|string|min:8',
         ]);
 
-        if (Auth::attempt($incomingfields)) {
+        if (Auth::attempt($incomingfields, $request->filled('remember'))) {
             $request->session()->regenerate();
-            return redirect()->intended(route('index'));
+            return redirect()->intended(route('index'))->with('success', 'Signed in successfully.');
         }
         return back()->withErrors([
             'email' => 'Invalid email or password, please try again.',
@@ -55,10 +64,10 @@ class AuthController extends Controller
 
     public function logout(Request $request)
     {
-        User::logout();
+        Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return redirect()->route('login');
+        return redirect()->route('login')->with('success', 'You have been logged out.');
     }
 }

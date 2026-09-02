@@ -16,7 +16,7 @@ class Department extends Model
         'location',
         'icon_type',
         'patients_ahead',
-        'avg_wait_time_mins',
+        'user_waitTime',
         'wait_status',
     ];
 

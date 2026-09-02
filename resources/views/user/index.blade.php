@@ -1,165 +1,256 @@
 <x-layout>
-    <x-slot:title>Qura - Hospital Queue Portal</x-slot:title>
+    <x-slot:title>Departments & Live Queue — {{ $hospital->hospital_name ?? 'Qura Medical' }}</x-slot:title>
 
-    <!-- FULL PAGE CONTAINER WITH GRADIENT BACKGROUND -->
-    <div class="min-h-screen bg-gradient-to-br from-indigo-100 via-purple-50 to-slate-100 flex flex-col">
+    <div class="max-w-7xl mx-auto px-4 sm:px-8 py-10 sm:py-16 space-y-12">
 
-        <!-- 1. FULL WIDTH NAVBAR -->
-        <nav
-            class="w-full bg-white/60 backdrop-blur-md border-b border-indigo-100/60 px-6 sm:px-12 py-4 flex items-center justify-between sticky top-0 z-50">
-            <div class="flex items-center space-x-3">
-                <div
-                    class="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white shadow-md shadow-indigo-500/20">
-                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
-                    </svg>
-                </div>
-                <span class="text-2xl font-black text-slate-900 tracking-tight">Qura</span>
+        <!-- EDITORIAL HERO (NO GENERIC BANNER) -->
+        <section class="text-center max-w-3xl mx-auto space-y-6 pt-4 sm:pt-8">
+            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-stone-100 text-ink-600 text-[11px] font-semibold uppercase tracking-widest">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span>
+                <span>Live Clinic Queue • Updated Real-Time</span>
             </div>
 
-            <div class="flex items-center space-x-3">
-                <button onclick="openEmergencyModal()"
-                    class="flex items-center gap-2 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200/80 text-xs font-bold px-4 py-2.5 rounded-xl transition shadow-sm">
-                    <svg class="w-4 h-4 text-red-600 animate-pulse" fill="none" viewBox="0 0 24 24"
-                        stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round"
-                            d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                    </svg>
-                    Emergency Care
-                </button>
-                <a href="{{ route('login') }}"
-                    class="text-xs font-bold text-slate-700 bg-white/80 hover:bg-white border border-slate-200/60 px-4 py-2.5 rounded-xl transition shadow-sm">
-                    Sign In
-                </a>
+            <h1 class="font-editorial text-4xl sm:text-6xl text-ink-900 tracking-tight leading-[1.15]">
+                Care that moves at your pace, not the <span class="italic font-normal">waiting room’s</span>
+            </h1>
+
+            <p class="text-ink-500 text-sm sm:text-base leading-relaxed max-w-xl mx-auto font-normal">
+                Check current queue lengths and estimated wait times across all outpatient departments. Join the line digitally from anywhere.
+            </p>
+
+            <div class="pt-2 text-xs text-ink-400 font-medium tracking-wide">
+                {{ $hospital->hospital_name ?? 'General Health Medical Center' }} &nbsp;•&nbsp; {{ $hospital->hospital_address ?? 'Central Outpatient Pavilion' }}
             </div>
-        </nav>
 
-        <!-- MAIN CONTENT WRAPPER -->
-        <main class="flex-1 max-w-7xl mx-auto w-full px-6 sm:px-12 py-10 flex flex-col justify-start">
-
-            <!-- 2. HERO & SEARCH SECTION -->
-            <div class="max-w-2xl mx-auto w-full text-center space-y-4 mb-10">
-                <h1 class="text-3xl sm:text-5xl font-black text-slate-900 tracking-tight">
-                    Find Your Department
-                </h1>
-                <p class="text-sm sm:text-base text-slate-600 font-medium">
-                    Search and join hospital queues instantly from anywhere.
-                </p>
-
-                <!-- Search Bar -->
-                <div class="relative mt-6">
-                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                        <svg class="w-5 h-5 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"
-                            stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round"
-                                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                        </svg>
+            <!-- KEY CLINIC METRICS (AIRY EDITORIAL STRIP) -->
+            <div class="pt-6 max-w-lg mx-auto">
+                <div class="grid grid-cols-3 divide-x divide-stone-200 py-3 border-y border-stone-200/80">
+                    <div class="text-center px-2">
+                        <span class="font-editorial text-2xl sm:text-3xl text-ink-900 block">{{ $departments->count() }}</span>
+                        <span class="text-[10px] uppercase tracking-widest text-ink-400 font-semibold">Specialties</span>
                     </div>
-                    <input type="text" id="departmentSearch" oninput="filterDepartments()"
-                        placeholder="Search for a department (e.g. Cardiology, Pediatrics)..."
-                        class="w-full pl-11 pr-4 py-4 bg-white/80 backdrop-blur-md border border-indigo-100 rounded-2xl shadow-lg shadow-indigo-900/5 text-sm font-medium text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition">
+
+                    @php
+                        $totalWaiting = $departmentCounts ? $departmentCounts->sum() : 0;
+                    @endphp
+                    <div class="text-center px-2">
+                        <span class="font-editorial text-2xl sm:text-3xl text-ink-900 block">{{ $totalWaiting }}</span>
+                        <span class="text-[10px] uppercase tracking-widest text-ink-400 font-semibold">In Line</span>
+                    </div>
+
+                    <div class="text-center px-2">
+                        <span class="font-editorial text-2xl sm:text-3xl text-ink-900 block">~12m</span>
+                        <span class="text-[10px] uppercase tracking-widest text-ink-400 font-semibold">Avg. Wait</span>
+                    </div>
                 </div>
             </div>
+        </section>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="departmentGrid">
-                @forelse($departments as $department)
-                    <div class="department-card bg-white/70 backdrop-blur-md border border-white/80 rounded-2xl p-6 shadow-md hover:shadow-xl hover:bg-white/90 hover:border-indigo-200 transition-all duration-200 space-y-5 flex flex-col justify-between"
-                        data-name="{{ strtolower($department->name) }}">
-
-                        <div class="space-y-4">
-                            <div class="flex justify-between items-start">
-                                <!-- Dynamic Icon Badge -->
-                                <div
-                                    class="w-11 h-11 bg-indigo-50 rounded-xl flex items-center justify-center text-indigo-600 shadow-inner">
-                                    @if ($department->icon_type === 'heart')
-                                        <svg class="w-6 h-6 text-red-500" fill="none" viewBox="0 0 24 24"
-                                            stroke="currentColor" stroke-width="2">
-                                            <path stroke-linecap="round" stroke-linejoin="round"
-                                                d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                                        </svg>
-                                    @elseif($department->icon_type === 'users')
-                                        <svg class="w-6 h-6 text-purple-600" fill="none" viewBox="0 0 24 24"
-                                            stroke="currentColor" stroke-width="2">
-                                            <path stroke-linecap="round" stroke-linejoin="round"
-                                                d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-                                        </svg>
-                                    @else
-                                        <svg class="w-6 h-6 text-indigo-600" fill="none" viewBox="0 0 24 24"
-                                            stroke="currentColor" stroke-width="2">
-                                            <path stroke-linecap="round" stroke-linejoin="round"
-                                                d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                                        </svg>
-                                    @endif
-                                </div>
-
-                                <!-- Dynamic Wait Status Badge -->
-                                <span
-                                    class="text-xs font-bold px-3 py-1 rounded-full border 
-                        {{ $department->wait_status === 'Low Wait' ? 'bg-emerald-50 text-emerald-700 border-emerald-200/60' : '' }}
-                        {{ $department->wait_status === 'Moderate' ? 'bg-amber-50 text-amber-700 border-amber-200/60' : '' }}
-                        {{ $department->wait_status === 'High Wait' ? 'bg-red-50 text-red-700 border-red-200/60' : '' }}">
-                                    {{ $department->wait_status }}
-                                </span>
-                            </div>
-
-                            <div>
-                                <h3 class="font-bold text-slate-900 text-lg">{{ $department->name }}</h3>
-                                <p class="text-xs text-slate-500 font-medium">{{ $department->location }}</p>
-                            </div>
-
-                            <div class="grid grid-cols-2 gap-2 border-t border-slate-200/50 pt-4 text-xs">
-                                <div>
-                                    <span
-                                        class="text-slate-400 block text-[10px] uppercase font-bold tracking-wider">Ahead</span>
-                                    <span class="font-bold text-slate-800 text-base">{{ $department->patients_ahead }}
-                                        Patients</span>
-                                </div>
-                                <div>
-                                    <span
-                                        class="text-slate-400 block text-[10px] uppercase font-bold tracking-wider">Est.
-                                        Wait</span>
-                                    <span
-                                        class="font-bold text-slate-800 text-base">~{{ $department->avg_wait_time_mins }}
-                                        mins</span>
-                                </div>
-                            </div>
+        <!-- ACTIVE TICKET NOTICE (MINIMALIST REFINED CARD) -->
+        @if($activeTicket)
+            @php
+                $ahead = $people_ahead ?? $peopleAhead ?? 0;
+                $wait = $user_waitTime ?? $userWaitTime ?? 0;
+            @endphp
+            <section class="bg-white rounded-3xl border border-stone-200 p-6 sm:p-8 shadow-xs">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                    <div class="flex items-center gap-5">
+                        <div class="w-16 h-16 rounded-2xl bg-stone-900 text-white flex flex-col items-center justify-center shrink-0">
+                            <span class="text-[9px] uppercase tracking-widest text-stone-400 font-bold">Pass</span>
+                            <span class="font-editorial text-2xl font-normal">#{{ $activeTicket->ticket_number }}</span>
                         </div>
 
-                        <form method="POST" action="">
+                        <div class="space-y-1">
+                            <div class="flex items-center gap-2">
+                                <span class="text-[10px] uppercase tracking-wider text-emerald-700 font-semibold px-2.5 py-0.5 rounded-full bg-emerald-50 border border-emerald-100">
+                                    Active Ticket
+                                </span>
+                                <span class="text-xs text-ink-400 font-medium">• {{ $ahead }} ahead of you</span>
+                            </div>
+                            <h2 class="font-editorial text-2xl text-ink-900">{{ $activeTicket->department }}</h2>
+                            <p class="text-xs text-ink-500">Estimated wait: ~{{ $wait }} minutes</p>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center gap-3 self-end md:self-auto">
+                        <a href="{{ route('queue.show') }}" 
+                            class="inline-flex items-center justify-center px-6 py-3 rounded-full text-xs font-semibold uppercase tracking-wider bg-ink-900 hover:bg-black text-white transition-all shadow-xs active:scale-95">
+                            View Live Pass
+                        </a>
+
+                        <form method="POST" action="{{ route('queue.leave') }}" onsubmit="return confirm('Leave this queue?');">
                             @csrf
-                            <input type="hidden" name="department_id" value="{{ $department->id }}">
-                            <button type="submit"
-                                class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-xl text-xs transition shadow-md shadow-indigo-600/20 active:scale-[0.98]">
-                                Join Queue
+                            <button type="submit" 
+                                class="px-5 py-3 rounded-full text-xs font-semibold uppercase tracking-wider text-stone-500 hover:text-stone-800 bg-stone-100 hover:bg-stone-200 transition-colors cursor-pointer">
+                                Leave
                             </button>
                         </form>
                     </div>
+                </div>
+            </section>
+        @endif
+
+        <!-- SEARCH & WING CATEGORY FILTERS -->
+        <section class="space-y-6 pt-2">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-stone-200 pb-6">
+                <!-- Search Input -->
+                <div class="relative w-full md:w-96">
+                    <input type="text" 
+                        id="departmentSearch" 
+                        oninput="filterDepartments()"
+                        placeholder="Search departments or wings..."
+                        class="w-full pl-11 pr-10 py-3 rounded-full bg-white border border-stone-200 text-xs font-medium text-ink-800 placeholder:text-ink-400 focus:outline-none focus:border-ink-900 transition-all">
+                    <svg class="w-4 h-4 text-ink-400 absolute left-4 top-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                    <button type="button" id="clearSearchBtn" onclick="clearSearch()" class="hidden absolute right-3.5 top-3 text-stone-400 hover:text-stone-700">
+                        &times;
+                    </button>
+                </div>
+
+                <!-- Minimalist Wing Filter Tabs -->
+                <div class="flex items-center gap-2 overflow-x-auto pb-1 text-xs" id="filterTabs">
+                    <button type="button" onclick="setWingFilter('all', this)" class="filter-tab active px-4 py-2 rounded-full text-xs font-semibold uppercase tracking-wider bg-ink-900 text-white transition-all cursor-pointer">
+                        All (<span id="visibleCount">{{ $departments->count() }}</span>)
+                    </button>
+                    <button type="button" onclick="setWingFilter('wing a', this)" class="filter-tab px-4 py-2 rounded-full text-xs font-semibold uppercase tracking-wider bg-white hover:bg-stone-100 text-ink-600 border border-stone-200 transition-all cursor-pointer">
+                        Wing A
+                    </button>
+                    <button type="button" onclick="setWingFilter('wing b', this)" class="filter-tab px-4 py-2 rounded-full text-xs font-semibold uppercase tracking-wider bg-white hover:bg-stone-100 text-ink-600 border border-stone-200 transition-all cursor-pointer">
+                        Wing B
+                    </button>
+                    <button type="button" onclick="setWingFilter('wing c', this)" class="filter-tab px-4 py-2 rounded-full text-xs font-semibold uppercase tracking-wider bg-white hover:bg-stone-100 text-ink-600 border border-stone-200 transition-all cursor-pointer">
+                        Wing C
+                    </button>
+                    <button type="button" onclick="setWingFilter('wing d', this)" class="filter-tab px-4 py-2 rounded-full text-xs font-semibold uppercase tracking-wider bg-white hover:bg-stone-100 text-ink-600 border border-stone-200 transition-all cursor-pointer">
+                        Wing D & Others
+                    </button>
+                </div>
+            </div>
+
+            <!-- DEPARTMENTS GRID -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6" id="departmentGrid">
+                @forelse($departments as $department)
+                    @php
+                        $count = $departmentCounts[$department->name] ?? 0;
+                        $deptWait = $count * 8;
+                        $nameLower = strtolower($department->name);
+                        $locationLower = strtolower($department->location ?? '');
+                    @endphp
+
+                    <div class="department-card group bg-white border border-stone-200/90 hover:border-stone-400 rounded-3xl p-7 transition-all duration-300 flex flex-col justify-between space-y-6 shadow-xs"
+                        data-name="{{ $nameLower }}"
+                        data-location="{{ $locationLower }}">
+
+                        <!-- Card Header -->
+                        <div class="space-y-3">
+                            <div class="flex items-center justify-between">
+                                <span class="text-[10px] uppercase tracking-widest text-ink-400 font-semibold">
+                                    {{ $department->location ?? 'Outpatient' }}
+                                </span>
+
+                                <span class="text-[11px] font-medium px-2.5 py-1 rounded-full bg-stone-100 text-ink-700">
+                                    @if($count === 0)
+                                        No wait
+                                    @else
+                                        ~{{ $deptWait }}m wait
+                                    @endif
+                                </span>
+                            </div>
+
+                            <h3 class="font-editorial text-2xl text-ink-900 group-hover:opacity-80 transition-opacity leading-snug">
+                                {{ $department->name }}
+                            </h3>
+
+                            <p class="text-xs text-ink-500 font-medium">
+                                <span class="font-bold text-ink-900">{{ $count }}</span> {{ Str::plural('patient', $count) }} in line
+                            </p>
+                        </div>
+
+                        <!-- Card Action -->
+                        <div class="pt-2 border-t border-stone-100">
+                            @auth
+                                @if($activeTicket)
+                                    <a href="{{ route('queue.show') }}" 
+                                        class="w-full py-3 px-5 rounded-full text-xs font-semibold uppercase tracking-wider text-center block bg-stone-100 hover:bg-stone-200 text-ink-700 transition-colors">
+                                        View Ticket (#{{ $activeTicket->ticket_number }})
+                                    </a>
+                                @else
+                                    <form method="POST" action="{{ route('queue.join') }}">
+                                        @csrf
+                                        <input type="hidden" name="department" value="{{ $department->name }}">
+                                        <button type="submit" 
+                                            class="w-full py-3 px-5 rounded-full text-xs font-semibold uppercase tracking-wider text-center bg-ink-900 hover:bg-black text-white transition-all shadow-xs cursor-pointer active:scale-98">
+                                            Enter Queue
+                                        </button>
+                                    </form>
+                                @endif
+                            @else
+                                <a href="{{ route('login') }}" 
+                                    class="w-full py-3 px-5 rounded-full text-xs font-semibold uppercase tracking-wider text-center block bg-stone-100 hover:bg-stone-200 text-ink-800 transition-colors">
+                                    Sign In to Enter
+                                </a>
+                            @endauth
+                        </div>
+
+                    </div>
                 @empty
-                    <div class="col-span-full text-center py-12">
-                        <p class="text-slate-500 font-medium">No active departments found for this hospital.</p>
+                    <div class="col-span-full text-center py-16 bg-white rounded-3xl border border-stone-200 p-8">
+                        <p class="font-editorial text-xl text-ink-900">No departments found</p>
+                        <p class="text-xs text-ink-400 mt-1">Please check back shortly.</p>
                     </div>
                 @endforelse
             </div>
 
-            <!-- Empty Search State -->
-            <div id="noResults" class="hidden text-center py-16 space-y-2">
-                <p class="text-lg font-bold text-slate-800">No matching departments found</p>
-                <p class="text-xs text-slate-500">Try searching with a different term.</p>
+            <!-- ZERO RESULTS FALLBACK -->
+            <div id="noResults" class="hidden text-center py-16 bg-white rounded-3xl border border-stone-200 p-8">
+                <p class="font-editorial text-2xl text-ink-900">No matching departments</p>
+                <p class="text-xs text-ink-400 mt-1">We couldn't find any department matching your query.</p>
+                <button type="button" onclick="clearSearch()" class="mt-4 px-5 py-2 rounded-full text-xs font-semibold uppercase tracking-wider bg-stone-100 hover:bg-stone-200 text-ink-800 transition-colors cursor-pointer">
+                    Clear Filters
+                </button>
             </div>
-    </div>
-    </main>
+        </section>
+
     </div>
 
-    <!-- LIVE SEARCH FILTER SCRIPT -->
+    <!-- CLIENT JAVASCRIPT FOR SEARCH & FILTERING -->
     <script>
+        let currentWingFilter = 'all';
+
+        function setWingFilter(wing, buttonElement) {
+            currentWingFilter = wing.toLowerCase();
+
+            document.querySelectorAll('.filter-tab').forEach(tab => {
+                tab.classList.remove('active', 'bg-ink-900', 'text-white');
+                tab.classList.add('bg-white', 'text-ink-600', 'border', 'border-stone-200');
+            });
+
+            buttonElement.classList.add('active', 'bg-ink-900', 'text-white');
+            buttonElement.classList.remove('bg-white', 'text-ink-600', 'border', 'border-stone-200');
+
+            filterDepartments();
+        }
+
         function filterDepartments() {
             const query = document.getElementById('departmentSearch').value.toLowerCase().trim();
+            const clearBtn = document.getElementById('clearSearchBtn');
             const cards = document.querySelectorAll('.department-card');
             let visibleCount = 0;
 
+            if (clearBtn) {
+                clearBtn.classList.toggle('hidden', query === '');
+            }
+
             cards.forEach(card => {
-                const name = card.getAttribute('data-name').toLowerCase();
-                if (query === '' || name.includes(query)) {
+                const name = card.getAttribute('data-name') || '';
+                const location = card.getAttribute('data-location') || '';
+
+                const matchesQuery = query === '' || name.includes(query) || location.includes(query);
+                const matchesWing = (currentWingFilter === 'all') 
+                    || (currentWingFilter === 'wing d' ? (!location.includes('wing a') && !location.includes('wing b') && !location.includes('wing c')) : location.includes(currentWingFilter));
+
+                if (matchesQuery && matchesWing) {
                     card.classList.remove('hidden');
                     visibleCount++;
                 } else {
@@ -167,12 +258,20 @@
                 }
             });
 
+            const countEl = document.getElementById('visibleCount');
+            if (countEl) countEl.textContent = visibleCount;
+
             const noResults = document.getElementById('noResults');
-            if (visibleCount === 0) {
-                noResults.classList.remove('hidden');
-            } else {
-                noResults.classList.add('hidden');
+            if (noResults) {
+                noResults.classList.toggle('hidden', visibleCount > 0);
             }
+        }
+
+        function clearSearch() {
+            const input = document.getElementById('departmentSearch');
+            if (input) input.value = '';
+            const firstTab = document.querySelector('.filter-tab');
+            if (firstTab) setWingFilter('all', firstTab);
         }
     </script>
 </x-layout>

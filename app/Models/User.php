@@ -24,6 +24,11 @@ class User extends Authenticatable
         'password',
     ];
 
+    public function queue()
+    {
+        return $this->hasOne(Queue::class)->where('is_active', true);
+    }
+
     /**
      * The attributes that should be hidden for serialization.
      *

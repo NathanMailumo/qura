@@ -19,7 +19,7 @@ return new class extends Migration
             $table->string('location'); 
             $table->string('icon_type')->default('general'); 
             $table->integer('patients_ahead')->default(0);
-            $table->integer('avg_wait_time_mins')->default(15);
+            $table->integer('user_waitTime')->default(15);
             $table->enum('wait_status', ['Low Wait', 'Moderate', 'High Wait'])->default('Low Wait');
             $table->timestamps();
         });

@@ -3,10 +3,11 @@
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\HospitalController;
 use App\Http\Controllers\PasswordResetController;
+use App\Http\Controllers\QueueController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
-    return redirect()->route('login');
+    return Auth::check() ? redirect()->route('index') : redirect()->route('login');
 });
 
 Route::get('/register', [AuthController::class, 'showRegister'])->name('register');
@@ -16,6 +17,11 @@ Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
 Route::post('/login', [AuthController::class, 'login'])->name('login.post');
 
 Route::get('/index', [HospitalController::class, 'index'])->name('index');
+Route::match(['get', 'post'], '/logout', [AuthController::class, 'logout'])->name('logout');
+
+Route::get('/queue', [QueueController::class, 'showQueuePage'])->name('queue.show');
+Route::post('/queue/join', [QueueController::class, 'joinQueue'])->name('queue.join');
+Route::post('/queue/leave', [QueueController::class, 'leaveQueue'])->name('queue.leave');
 
 
 Route::get('/forgot-password', [PasswordResetController::class, 'showReset'])->name('password.reset');
